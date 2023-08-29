@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="BRli4s" name="RSTelecom" projectType="audioplug" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              version="0.1.0" companyWebsite="reillyspitzfaden.netlify.app"
+              bundleIdentifier="com.reillyapitzfaden.RSTelecom" pluginManufacturer="Reilly Spitzfaden"
+              aaxIdentifier="com.reillyspitzfaden.RSTelecom" cppLanguageStandard="20">
+  <MAINGROUP id="xmOF5Q" name="RSTelecom">
+    <GROUP id="{4FD4FE91-39CC-AA94-403D-718ABB361BFD}" name="gsm">
+      <FILE id="rCAgkQ" name="add.c" compile="1" resource="0" file="Source/gsm/add.c"/>
+      <FILE id="JUDYEp" name="code.c" compile="1" resource="0" file="Source/gsm/code.c"/>
+      <FILE id="ZJJGAj" name="config.h" compile="0" resource="0" file="Source/gsm/config.h"/>
+      <FILE id="Jbr8Qy" name="COPYRIGHT" compile="0" resource="1" file="Source/gsm/COPYRIGHT"/>
+      <FILE id="CdrKvA" name="debug.c" compile="1" resource="0" file="Source/gsm/debug.c"/>
+      <FILE id="wtq6LH" name="decode.c" compile="1" resource="0" file="Source/gsm/decode.c"/>
+      <FILE id="qnM2qS" name="gsm.h" compile="0" resource="0" file="Source/gsm/gsm.h"/>
+      <FILE id="dp8pLn" name="gsm_create.c" compile="1" resource="0" file="Source/gsm/gsm_create.c"/>
+      <FILE id="ROJV8R" name="gsm_decode.c" compile="1" resource="0" file="Source/gsm/gsm_decode.c"/>
+      <FILE id="rAK7tj" name="gsm_destroy.c" compile="1" resource="0" file="Source/gsm/gsm_destroy.c"/>
+      <FILE id="EGjtYe" name="gsm_encode.c" compile="1" resource="0" file="Source/gsm/gsm_encode.c"/>
+      <FILE id="YHB280" name="gsm_explode.c" compile="1" resource="0" file="Source/gsm/gsm_explode.c"/>
+      <FILE id="xD1w0X" name="gsm_implode.c" compile="1" resource="0" file="Source/gsm/gsm_implode.c"/>
+      <FILE id="QVKkLo" name="gsm_option.c" compile="1" resource="0" file="Source/gsm/gsm_option.c"/>
+      <FILE id="qH2IVT" name="gsm_print.c" compile="1" resource="0" file="Source/gsm/gsm_print.c"/>
+      <FILE id="K10HjT" name="long_term.c" compile="1" resource="0" file="Source/gsm/long_term.c"/>
+      <FILE id="IMbeSh" name="lpc.c" compile="1" resource="0" file="Source/gsm/lpc.c"/>
+      <FILE id="JvpD4j" name="preprocess.c" compile="1" resource="0" file="Source/gsm/preprocess.c"/>
+      <FILE id="K09eme" name="private.h" compile="0" resource="0" file="Source/gsm/private.h"/>
+      <FILE id="jjPYdt" name="proto.h" compile="0" resource="0" file="Source/gsm/proto.h"/>
+      <FILE id="CfeNwR" name="README" compile="0" resource="1" file="Source/gsm/README"/>
+      <FILE id="cu6vAn" name="rpe.c" compile="1" resource="0" file="Source/gsm/rpe.c"/>
+      <FILE id="UMWkUZ" name="short_term.c" compile="1" resource="0" file="Source/gsm/short_term.c"/>
+      <FILE id="cKr0f7" name="table.c" compile="1" resource="0" file="Source/gsm/table.c"/>
+      <FILE id="zZuuYh" name="unproto.h" compile="0" resource="0" file="Source/gsm/unproto.h"/>
+    </GROUP>
+    <GROUP id="{51A9F20E-7097-794D-7E75-2E0191CB2EB2}" name="Source">
+      <FILE id="X2YnHC" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="NXUn8w" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="HTEuKu" name="PluginEditor.cpp" compile="1" resource="0"
+            file="Source/PluginEditor.cpp"/>
+      <FILE id="nNosJP" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="HYGXed" name="BitReducerProcessor.cpp" compile="1" resource="0"
+            file="Source/BitReducerProcessor.cpp"/>
+      <FILE id="Pnhu5g" name="BitReducerProcessor.h" compile="0" resource="0"
+            file="Source/BitReducerProcessor.h"/>
+      <FILE id="HrvbdK" name="CodecProcessor.cpp" compile="1" resource="0"
+            file="Source/CodecProcessor.cpp"/>
+      <FILE id="VgkSh0" name="CodecProcessor.h" compile="0" resource="0"
+            file="Source/CodecProcessor.h"/>
+      <FILE id="ivkWAA" name="UI.h" compile="0" resource="0" file="Source/UI.h"/>
+      <FILE id="EqzD0s" name="Utilities.h" compile="0" resource="0" file="Source/Utilities.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="RSTelecom" vst3BinaryLocation="Library/Audio/Plug-Ins/VST3/"
+                       auBinaryLocation="Library/Audio/Plug-Ins/Components/"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="RSTelecom" vst3BinaryLocation="Library/Audio/Plug-Ins/vST3/"
+                       auBinaryLocation="Library/Audio/Plug-Ins/Components/"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../../JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+</JUCERPROJECT>
