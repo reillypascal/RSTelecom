@@ -23,11 +23,9 @@ struct ProcessorFactory
         return nullptr;
     }
     
-    std::map<
-        int,
-        std::function<std::unique_ptr<CodecProcessorBase>()>> processorMapping
+    std::map<int,
+             std::function<std::unique_ptr<CodecProcessorBase>()>> processorMapping
     {
-        { 0, []() { return nullptr; } },
         { 1, []() { return std::make_unique<GSMProcessor>(); } },
         { 3, []() { return std::make_unique<MuLawProcessor>(); } }
     };
@@ -93,9 +91,9 @@ private:
     juce::AudioParameterChoice* slot1MenuParameter = nullptr;
     juce::AudioParameterChoice* slot2MenuParameter = nullptr;
     
-//    GSMProcessor gsmProcessor;
-//    
-//    MuLawProcessor muLawProcessor;
+    GSMProcessor gsmProcessor;
+    
+    MuLawProcessor muLawProcessor;
     
     ProcessorFactory processorFactory {};
     

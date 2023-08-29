@@ -142,13 +142,13 @@ void RSTelecomAudioProcessor::changeProgramName (int index, const juce::String& 
 //==============================================================================
 void RSTelecomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-//    juce::dsp::ProcessSpec spec;
-//    spec.sampleRate = sampleRate;
-//    spec.maximumBlockSize = samplesPerBlock;
-//    spec.numChannels = getTotalNumInputChannels();
-//    
-//    gsmProcessor.prepare(spec);
-//    muLawProcessor.prepare(spec);
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumInputChannels();
+    
+    gsmProcessor.prepare(spec);
+    muLawProcessor.prepare(spec);
 }
 
 void RSTelecomAudioProcessor::releaseResources()
@@ -204,7 +204,9 @@ void RSTelecomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         
         slot1Processor = processorFactory.create(slot1Codec);
         if (slot1Processor != nullptr)
-            slot1Processor.get()->prepare(spec);
+            slot1Processor->prepare(spec);
+        
+        prevSlot1Codec = slot1Codec;
     }
     
     if (slot2Codec != prevSlot2Codec)
@@ -216,33 +218,35 @@ void RSTelecomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         
         slot2Processor = processorFactory.create(slot2Codec);
         if (slot2Processor != nullptr)
-            slot2Processor.get()->prepare(spec);
+            slot2Processor->prepare(spec);
+        
+        prevSlot2Codec = slot2Codec;
     }
     
     if (slot1Processor != nullptr)
     {
-        processorParameters = slot1Processor.get()->getParameters();
+        processorParameters = slot1Processor->getParameters();
         processorParameters.downsampling = downsamplingParameter->getIndex() + 1;
         processorParameters.bitrate = bitrateParameter->getIndex() + 1;
         
-        slot1Processor.get()->setParameters(processorParameters);
+        slot1Processor->setParameters(processorParameters);
         
-        slot1Processor.get()->processBlock(buffer, midiMessages);
+        slot1Processor->processBlock(buffer, midiMessages);
     }
     
     if (slot2Processor != nullptr)
     {
-        processorParameters = slot1Processor.get()->getParameters();
+        processorParameters = slot2Processor->getParameters();
         processorParameters.downsampling = downsamplingParameter->getIndex() + 1;
         processorParameters.bitrate = bitrateParameter->getIndex() + 1;
         
-        slot2Processor.get()->setParameters(processorParameters);
+        slot2Processor->setParameters(processorParameters);
         
-        slot2Processor.get()->processBlock(buffer, midiMessages);
+        slot2Processor->processBlock(buffer, midiMessages);
     }
     
 //    muLawProcessor.processBlock(buffer, midiMessages);
-//
+
 //    gsmProcessor.processBlock(buffer, midiMessages);
     
 //    for (int channel = 0; channel < totalNumInputChannels; ++channel)

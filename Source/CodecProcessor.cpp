@@ -135,9 +135,7 @@ CodecProcessorParameters& GSMProcessor::getParameters() { return parameters; }
 void GSMProcessor::setParameters(const CodecProcessorParameters& params)
 {
     if (parameters.downsampling != params.downsampling)
-    {
-        parameters.downsampling = params.downsampling;
-        
+    {        
         // pre filters
         preFilter1.reset();
         preFilter2.reset();
@@ -150,7 +148,7 @@ void GSMProcessor::setParameters(const CodecProcessorParameters& params)
         postFilter3.reset();
         postFilter4.reset();
         
-        mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / parameters.downsampling) * 0.4, mSampleRate, 8);
+        mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / params.downsampling) * 0.4, mSampleRate, 8);
         
         // pre filters
         preFilter1.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
