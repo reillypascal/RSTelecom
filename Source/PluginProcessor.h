@@ -91,20 +91,17 @@ private:
     juce::AudioParameterChoice* slot1MenuParameter = nullptr;
     juce::AudioParameterChoice* slot2MenuParameter = nullptr;
     
-    GSMProcessor gsmProcessor;
-    
-    MuLawProcessor muLawProcessor;
-    
     ProcessorFactory processorFactory {};
     
-    std::unique_ptr<CodecProcessorBase> slot1Processor = nullptr;
-    std::unique_ptr<CodecProcessorBase> slot2Processor = nullptr;
-    
-    int prevSlot1Codec = -1;
-    int prevSlot2Codec = -1;
+    std::vector<std::unique_ptr<CodecProcessorBase>> slotProcessors = std::vector<std::unique_ptr<CodecProcessorBase>> { 2 };
     
     CodecProcessorParameters processorParameters;
     
+    std::vector<int> slotCodecs { 0, 0 };
+    std::vector<int> prevSlotCodecs { -1, -1 };
+    
+    int mNumProcessorSlots = 2;
+        
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RSTelecomAudioProcessor)
 };
