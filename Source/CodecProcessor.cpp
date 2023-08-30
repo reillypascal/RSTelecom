@@ -10,41 +10,23 @@ void GSMProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 {
     mSampleRate = spec.sampleRate;
     
-    mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / parameters.downsampling) * 0.4, mSampleRate, 8);
+    mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / parameters.downsampling) * 0.4, mSampleRate, mResamplingFilterOrder);
     
-    // pre filters
-    preFilter1.reset();
-    preFilter1.prepare(spec);
-    preFilter1.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
+    preFilters.resize(mResamplingFilterOrder / 2);
+    postFilters.resize(mResamplingFilterOrder / 2);
     
-    preFilter2.reset();
-    preFilter2.prepare(spec);
-    preFilter2.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
-    
-    preFilter3.reset();
-    preFilter3.prepare(spec);
-    preFilter3.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
-    
-    preFilter4.reset();
-    preFilter4.prepare(spec);
-    preFilter4.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
-    
-    // post filters
-    postFilter1.reset();
-    postFilter1.prepare(spec);
-    postFilter1.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
-    
-    postFilter2.reset();
-    postFilter2.prepare(spec);
-    postFilter2.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
-    
-    postFilter3.reset();
-    postFilter3.prepare(spec);
-    postFilter3.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
-    
-    postFilter4.reset();
-    postFilter4.prepare(spec);
-    postFilter4.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
+    for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+    {
+        // prepare each pre-filter
+        preFilters[filter].reset();
+        preFilters[filter].prepare(spec);
+        preFilters[filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
+        
+        // prepare each post-filter
+        postFilters[filter].reset();
+        postFilters[filter].prepare(spec);
+        postFilters[filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
+    }
     
     reset();
 }
@@ -66,29 +48,36 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
     
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        // resampling filter
-        src[sample] = preFilter1.processSample(src[sample]);
-        preFilter1.snapToZero();
-        src[sample] = preFilter2.processSample(src[sample]);
-        preFilter2.snapToZero();
-        src[sample] = preFilter3.processSample(src[sample]);
-        preFilter3.snapToZero();
-        src[sample] = preFilter4.processSample(src[sample]);
-        preFilter4.snapToZero();
-        
+        // if gsm data variables are valid, process audio
         if (mGsmSignalInput != nullptr && mGsmSignal != nullptr && mGsmSignalOutput != nullptr)
         {
+            // low cut filter
+            src[sample] = lowCutFilter.processSample(src[sample]);
+            
+            // pre-filtering
+            for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+            {
+                src[sample] = preFilters[filter].processSample(src[sample]);
+                preFilters[filter].snapToZero();
+            }
+            
+            // move filter gain compensation before gsm to minimize noise?
+            
+            // prepare to store next sample
             float currentSample { 0.0f };
+            // sync data rate to downsampling counter
             if (mDownsamplingCounter == 0)
             {
                 mGsmSignalInput.get()[mGsmSignalCounter] = static_cast<gsm_signal>(src[sample] * 4096.0f);
 
                 mGsmSignalInput.get()[mGsmSignalCounter] <<= 3;
                 mGsmSignalInput.get()[mGsmSignalCounter] &= 0b1111111111111000;
-
+                
+                // increment gsm frame
                 ++mGsmSignalCounter;
                 mGsmSignalCounter %= 160;
-
+                
+                // sync data rate to gsm frame
                 if (mGsmSignalCounter == 0)
                 {
                     std::swap(mGsmSignalInput, mGsmSignal);
@@ -101,21 +90,22 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
                 currentSample = static_cast<float>(mGsmSignalOutput.get()[mGsmSignalCounter]) / 4096.0f;
             }
             
+            // increment downsampling frame
             ++mDownsamplingCounter;
             mDownsamplingCounter %= parameters.downsampling;
             
-            currentSample = postFilter1.processSample(currentSample);
-            postFilter1.snapToZero();
-            currentSample = postFilter2.processSample(currentSample);
-            postFilter2.snapToZero();
-            currentSample = postFilter3.processSample(currentSample);
-            postFilter3.snapToZero();
-            currentSample = postFilter4.processSample(currentSample);
-            postFilter4.snapToZero();
+            // post-filtering
+            for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+            {
+                currentSample = postFilters[filter].processSample(currentSample);
+                postFilters[filter].snapToZero();
+            }
             
+            // filter gain compensation - move before gsm to minimize noise?
             std::vector<float> downsamplingGainComp { 1.0f, 1.0f, 1.45f, 2.35f, 3.5f, 4.35f, 5.5f, 6.25f, 7.0f };
-            currentSample *= downsamplingGainComp[parameters.downsampling];
+            src[sample] *= downsamplingGainComp[parameters.downsampling];
             
+            // move from mono gsm signal to stereo out buffer
             for (int channel = 0; channel < numChannels; ++channel)
             {
                 auto* dst = buffer.getWritePointer(channel);
@@ -132,33 +122,18 @@ CodecProcessorParameters& GSMProcessor::getParameters() { return parameters; }
 void GSMProcessor::setParameters(const CodecProcessorParameters& params)
 {
     if (parameters.downsampling != params.downsampling)
-    {        
-        // pre filters
-        preFilter1.reset();
-        preFilter2.reset();
-        preFilter3.reset();
-        preFilter4.reset();
-        
-        // post filters
-        postFilter1.reset();
-        postFilter2.reset();
-        postFilter3.reset();
-        postFilter4.reset();
-        
+    {
         // coefficients
         mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / params.downsampling) * 0.4, mSampleRate, 8);
         
-        // pre filters
-        preFilter1.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
-        preFilter2.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
-        preFilter3.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
-        preFilter4.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
-        
-        // post filters
-        postFilter1.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
-        postFilter2.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
-        postFilter3.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
-        postFilter4.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
+        for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+        {
+            // update each pre-filter
+            preFilters[filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
+            
+            // update each post-filter
+            postFilters[filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
+        }
     }
     
     parameters = params;

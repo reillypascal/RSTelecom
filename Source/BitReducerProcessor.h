@@ -53,19 +53,56 @@ private:
     float mOutScale { 1.0f/32767.0f };
     
     int mSampleRate { 44100 };
+    int mNumChannels { 2 };
     std::vector<int> mDownsamplingCounter { 0, 0 };
     CodecProcessorParameters parameters;
     
-    using IIR = juce::dsp::IIR::Filter<float>;
-    std::vector<IIR> preFilter1;
-    std::vector<IIR> preFilter2;
-    std::vector<IIR> preFilter3;
-    std::vector<IIR> preFilter4;
+    int mResamplingFilterOrder = 8;
     
-    std::vector<IIR> postFilter1;
-    std::vector<IIR> postFilter2;
-    std::vector<IIR> postFilter3;
-    std::vector<IIR> postFilter4;
+    using IIR = juce::dsp::IIR::Filter<float>;
+    std::vector<std::vector<IIR>> preFilters;
+    std::vector<std::vector<IIR>> postFilters;
+    
+    juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>> mFilterCoefficientsArray;
+};
+
+
+//=======================================================================
+
+class ALawProcessor : public CodecProcessorBase
+{
+public:
+    ALawProcessor();
+    
+    ~ALawProcessor() override;
+    
+    void prepare(const juce::dsp::ProcessSpec& spec) override;
+    
+    void processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) override;
+    
+    void reset() override;
+    
+    CodecProcessorParameters& getParameters() override;
+    
+    void setParameters(const CodecProcessorParameters& params) override;
+    
+private:
+//    unsigned char Lin2ALaw(int16_t pcm_val);
+    
+//    short ALaw2Lin(uint8_t u_val);
+    
+    float mOutScale { 1.0f/32767.0f };
+    
+    int mSampleRate { 44100 };
+    int mNumChannels { 2 };
+    std::vector<int> mDownsamplingCounter { 0, 0 };
+    CodecProcessorParameters parameters;
+    
+    int mResamplingFilterOrder = 8;
+    
+    using IIR = juce::dsp::IIR::Filter<float>;
+    std::vector<std::vector<IIR>> preFilters;
+    std::vector<std::vector<IIR>> postFilters;
     
     juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>> mFilterCoefficientsArray;
 };
