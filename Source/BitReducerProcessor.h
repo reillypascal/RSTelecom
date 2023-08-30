@@ -50,9 +50,22 @@ private:
     
     short MuLaw2Lin(uint8_t u_val);
     
-    int mSampleRate = 44100;
+    float mOutScale { 1.0f/32767.0f };
     
-    float mOutScale = 1.0f/32767.0f;
-    
+    int mSampleRate { 44100 };
+    std::vector<int> mDownsamplingCounter { 0, 0 };
     CodecProcessorParameters parameters;
+    
+    using IIR = juce::dsp::IIR::Filter<float>;
+    std::vector<IIR> preFilter1;
+    std::vector<IIR> preFilter2;
+    std::vector<IIR> preFilter3;
+    std::vector<IIR> preFilter4;
+    
+    std::vector<IIR> postFilter1;
+    std::vector<IIR> postFilter2;
+    std::vector<IIR> postFilter3;
+    std::vector<IIR> postFilter4;
+    
+    juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>> mFilterCoefficientsArray;
 };

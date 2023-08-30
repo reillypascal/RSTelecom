@@ -25,8 +25,6 @@ class GSMProcessor : public CodecProcessorBase
     CodecProcessorParameters parameters;
     int mSampleRate { 44100 };
     int mGsmSignalCounter { 0 };
-    //int mDownsamplingAmt { 5 };
-    //int mPrevDownsamplingAmt { 0 };
     int mDownsamplingCounter { 0 };
     
     juce::dsp::IIR::Filter<float> preFilter1;
@@ -55,6 +53,4 @@ public:
     CodecProcessorParameters& getParameters() override;
     
     void setParameters(const CodecProcessorParameters& params) override;
-    
-//    void setDownsampling(int newDownsampling);
 };

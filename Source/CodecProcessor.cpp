@@ -125,10 +125,7 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
     }
 }
 
-void GSMProcessor::reset()
-{
-    
-}
+void GSMProcessor::reset() {}
 
 CodecProcessorParameters& GSMProcessor::getParameters() { return parameters; }
 
@@ -148,6 +145,7 @@ void GSMProcessor::setParameters(const CodecProcessorParameters& params)
         postFilter3.reset();
         postFilter4.reset();
         
+        // coefficients
         mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / params.downsampling) * 0.4, mSampleRate, 8);
         
         // pre filters
@@ -165,39 +163,3 @@ void GSMProcessor::setParameters(const CodecProcessorParameters& params)
     
     parameters = params;
 }
-
-//void GSMProcessor::setDownsampling(int newDownsampling)
-//{
-//    mDownsamplingAmt = newDownsampling;
-//
-//    if (mDownsamplingAmt != mPrevDownsamplingAmt)
-//    {
-//        mPrevDownsamplingAmt = mDownsamplingAmt;
-//        
-//        // pre filters
-//        preFilter1.reset();
-//        preFilter2.reset();
-//        preFilter3.reset();
-//        preFilter4.reset();
-//
-//        // post filters
-//        postFilter1.reset();
-//        postFilter2.reset();
-//        postFilter3.reset();
-//        postFilter4.reset();
-//
-//        mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / mDownsamplingAmt) * 0.4, mSampleRate, 8);
-//
-//        // pre filters
-//        preFilter1.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
-//        preFilter2.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
-//        preFilter3.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
-//        preFilter4.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
-//
-//        // post filters
-//        postFilter1.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
-//        postFilter2.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
-//        postFilter3.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
-//        postFilter4.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
-//    }
-//}

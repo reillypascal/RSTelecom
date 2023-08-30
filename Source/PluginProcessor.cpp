@@ -30,8 +30,8 @@ RSTelecomAudioProcessor::RSTelecomAudioProcessor()
         std::make_unique<juce::AudioParameterChoice>(juce::ParameterID
                                                      { "bitrate", 1 },
                                                      "Bitrate",
-                                                     juce::StringArray { "Default", "2x", "1/2", "1/4" },
-                                                     0),
+                                                     juce::StringArray { "8 kb/s", "12 kb/s", "16 kb/s", "24 kb/s", "32 kb/s" },
+                                                     1),
         std::make_unique<juce::AudioParameterFloat>(juce::ParameterID
                                                     { "saturation", 1 },
                                                     "Saturation",
@@ -53,12 +53,12 @@ RSTelecomAudioProcessor::RSTelecomAudioProcessor()
         std::make_unique<juce::AudioParameterChoice>(juce::ParameterID
                                                      { "slot1", 1 },
                                                      "Slot 1",
-                                                     juce::StringArray { "None", "GSM 06.10", "iLBC", "Mu-Law", "A-Law" },
+                                                     juce::StringArray { "None", "GSM 06.10", "Opus", "Mu-Law", "A-Law" },
                                                      0),
         std::make_unique<juce::AudioParameterChoice>(juce::ParameterID
                                                      { "slot2", 1 },
                                                      "Slot 2",
-                                                     juce::StringArray { "None", "GSM 06.10", "iLBC", "Mu-Law", "A-Law" },
+                                                     juce::StringArray { "None", "GSM 06.10", "Opus", "Mu-Law", "A-Law" },
                                                      0)
     })
 {
@@ -207,15 +207,17 @@ void RSTelecomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     {
         if (slotCodecs[i] != prevSlotCodecs[i])
         {
-            juce::dsp::ProcessSpec spec;
-            spec.sampleRate = getSampleRate();
-            spec.maximumBlockSize = buffer.getNumSamples();
-            spec.numChannels = buffer.getNumChannels();
-            
             slotProcessors[i] = processorFactory.create(slotCodecs[i]);
             
             if (slotProcessors[i] != nullptr)
+            {
+                juce::dsp::ProcessSpec spec;
+                spec.sampleRate = getSampleRate();
+                spec.maximumBlockSize = buffer.getNumSamples();
+                spec.numChannels = buffer.getNumChannels();
+                
                 slotProcessors[i]->prepare(spec);
+            }
             
             prevSlotCodecs[i] = slotCodecs[i];
         }

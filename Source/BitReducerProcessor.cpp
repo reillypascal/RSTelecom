@@ -8,6 +8,69 @@ void MuLawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 {
     mSampleRate = spec.sampleRate;
     
+    // coefficients
+    mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / parameters.downsampling) * 0.4, mSampleRate, 8);
+    
+    auto numChannels = spec.numChannels;
+    
+    preFilter1.resize(numChannels);
+    for (auto& ch : preFilter1)
+    {
+        ch.reset();
+        ch.prepare(spec);
+        ch.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
+    }
+    preFilter2.resize(numChannels);
+    for (auto& ch : preFilter2)
+    {
+        ch.reset();
+        ch.prepare(spec);
+        ch.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
+    }
+    preFilter3.resize(numChannels);
+    for (auto& ch : preFilter3)
+    {
+        ch.reset();
+        ch.prepare(spec);
+        ch.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
+    }
+    preFilter4.resize(numChannels);
+    for (auto& ch : preFilter4)
+    {
+        ch.reset();
+        ch.prepare(spec);
+        ch.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
+    }
+    
+    postFilter1.resize(numChannels);
+    for (auto& ch : postFilter1)
+    {
+        ch.reset();
+        ch.prepare(spec);
+        ch.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
+    }
+    postFilter2.resize(numChannels);
+    for (auto& ch : postFilter2)
+    {
+        ch.reset();
+        ch.prepare(spec);
+        ch.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
+    }
+    postFilter3.resize(numChannels);
+    for (auto& ch : postFilter3)
+    {
+        ch.reset();
+        ch.prepare(spec);
+        ch.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
+    }
+    postFilter4.resize(numChannels);
+    for (auto& ch : postFilter4)
+    {
+        ch.reset();
+        ch.prepare(spec);
+        ch.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
+    }
+    
     reset();
 }
 
@@ -22,7 +85,42 @@ void MuLawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBu
         
         for (int sample = 0; sample < numSamples; ++sample)
         {
-            float input = channelData[sample];
+            float input = 0.0f;
+            
+            if (parameters.downsampling > 1)
+            {
+                // pre-downsampling filters
+                channelData[sample] = preFilter1[channel].processSample(channelData[sample]);
+                preFilter1[channel].snapToZero();
+                channelData[sample] = preFilter2[channel].processSample(channelData[sample]);
+                preFilter2[channel].snapToZero();
+                channelData[sample] = preFilter3[channel].processSample(channelData[sample]);
+                preFilter3[channel].snapToZero();
+                channelData[sample] = preFilter4[channel].processSample(channelData[sample]);
+                preFilter4[channel].snapToZero();
+                
+                if (mDownsamplingCounter[channel] == 0)
+                    input = channelData[sample];
+                
+                ++mDownsamplingCounter[channel];
+                mDownsamplingCounter[channel] %= parameters.downsampling;
+                
+                // post-downsampling images filters
+                input = postFilter1[channel].processSample(input);
+                postFilter1[channel].snapToZero();
+                input = postFilter2[channel].processSample(input);
+                postFilter2[channel].snapToZero();
+                input = postFilter3[channel].processSample(input);
+                postFilter3[channel].snapToZero();
+                input = postFilter4[channel].processSample(input);
+                postFilter4[channel].snapToZero();
+            }
+            else
+                input = channelData[sample];
+            
+            std::vector<float> downsamplingGainComp { 1.0f, 1.0f, 1.45f, 2.35f, 3.5f, 4.35f, 5.5f, 6.25f, 7.0f };
+            input *= downsamplingGainComp[parameters.downsampling];
+            
             int16_t pcm_in = static_cast<int16_t>(input * 32767.0);
             uint8_t compressed = Lin2MuLaw(pcm_in);
             
@@ -38,6 +136,38 @@ CodecProcessorParameters& MuLawProcessor::getParameters() { return parameters; }
 
 void MuLawProcessor::setParameters(const CodecProcessorParameters& params)
 {
+    if (parameters.downsampling != params.downsampling)
+    {
+        // coefficients
+        mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / parameters.downsampling) * 0.4, mSampleRate, 8);
+        
+        for (auto& ch : preFilter1)
+            ch.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
+        
+        for (auto& ch : preFilter2)
+            ch.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
+        
+        for (auto& ch : preFilter3)
+            ch.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
+        
+        for (auto& ch : preFilter4)
+            ch.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
+        
+        
+        for (auto& ch : postFilter1)
+            ch.coefficients = mFilterCoefficientsArray.getObjectPointer(0);
+        
+        for (auto& ch : postFilter2)
+            ch.coefficients = mFilterCoefficientsArray.getObjectPointer(1);
+        
+        for (auto& ch : postFilter3)
+            ch.coefficients = mFilterCoefficientsArray.getObjectPointer(2);
+        
+        for (auto& ch : postFilter4)
+            ch.coefficients = mFilterCoefficientsArray.getObjectPointer(3);
+        
+    }
+    
     parameters = params;
 }
 
