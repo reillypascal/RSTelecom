@@ -47,41 +47,41 @@ void MuLawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBu
         
         for (int sample = 0; sample < numSamples; ++sample)
         {
-            float input = 0.0f;
+            // Mu-Law processing on channelData
+            int16_t pcm_in = static_cast<int16_t>(channelData[sample] * 32767.0);
+            uint8_t compressed = Lin2MuLaw(pcm_in);
             
+            int16_t pcm_out = MuLaw2Lin(compressed);
+            channelData[sample] = static_cast<float>(pcm_out) * mOutScale;
+            
+            // downsample and filter
             if (parameters.downsampling > 1)
             {
-                // pre-filtering
+                // pre-filtering; write from/to channelData
                 for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
                 {
                     channelData[sample] = preFilters[channel][filter].processSample(channelData[sample]);
                     preFilters[channel][filter].snapToZero();
                 }
                 
+                // downsampling; increment input sample from channelData
                 if (mDownsamplingCounter[channel] == 0)
-                    input = channelData[sample];
+                    mDownsamplingInput[channel] = channelData[sample];
+                
+                channelData[sample] = mDownsamplingInput[channel];
                 
                 ++mDownsamplingCounter[channel];
                 mDownsamplingCounter[channel] %= parameters.downsampling;
                 
-                // post-filtering
+                // post-filtering; take in input sample, write to channelData
                 for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
                 {
-                    input = postFilters[channel][filter].processSample(input);
+                    channelData[sample] = postFilters[channel][filter].processSample(channelData[sample]);
                     postFilters[channel][filter].snapToZero();
                 }
+                
+                channelData[sample] *= mDownsamplingGainComp[parameters.downsampling];
             }
-            else
-                input = channelData[sample];
-            
-            std::vector<float> downsamplingGainComp { 1.0f, 1.0f, 1.45f, 2.35f, 3.5f, 4.35f, 5.5f, 6.25f, 7.0f };
-            input *= downsamplingGainComp[parameters.downsampling];
-            
-            int16_t pcm_in = static_cast<int16_t>(input * 32767.0);
-            uint8_t compressed = Lin2MuLaw(pcm_in);
-            
-            int16_t pcm_out = MuLaw2Lin(compressed);
-            channelData[sample] = static_cast<float>(pcm_out) * mOutScale;
         }
     }
 }
@@ -200,7 +200,7 @@ void ALawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
     reset();
 }
 
-void ALawProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages)
+void ALawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     int numSamples = buffer.getNumSamples();
     int numChannels = buffer.getNumChannels();
@@ -211,45 +211,41 @@ void ALawProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuf
         
         for (int sample = 0; sample < numSamples; ++sample)
         {
-            float input = 0.0f;
+            // A-law processing on channelData
+            int16_t pcm_in = static_cast<int16_t>(channelData[sample] * 32767.0);
+            uint8_t compressed = Lin2ALaw(pcm_in);
+
+            int16_t pcm_out = ALaw2Lin(compressed);
+            channelData[sample] = static_cast<float>(pcm_out) * mOutScale;
             
-            // choose downsampling or no
+            // downsample and filter
             if (parameters.downsampling > 1)
             {
-                // pre-filtering
+                // pre-filtering; write from/to channelData
                 for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
                 {
                     channelData[sample] = preFilters[channel][filter].processSample(channelData[sample]);
                     preFilters[channel][filter].snapToZero();
                 }
                 
-                // downsampling
+                // downsampling; increment input sample from channelData
                 if (mDownsamplingCounter[channel] == 0)
-                    input = channelData[sample];
+                    mDownsamplingInput[channel] = channelData[sample];
+                
+                channelData[sample] = mDownsamplingInput[channel];
                 
                 ++mDownsamplingCounter[channel];
                 mDownsamplingCounter[channel] %= parameters.downsampling;
                 
-                // post-filtering
+                // post-filtering; take in input sample, write to channelData
                 for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
                 {
-                    input = postFilters[channel][filter].processSample(input);
+                    channelData[sample] = postFilters[channel][filter].processSample(channelData[sample]);
                     postFilters[channel][filter].snapToZero();
                 }
+                
+                channelData[sample] *= mDownsamplingGainComp[parameters.downsampling];
             }
-            else
-                input = channelData[sample];
-            
-            // A-law processing
-            std::vector<float> downsamplingGainComp { 1.0f, 1.0f, 1.45f, 2.35f, 3.5f, 4.35f, 5.5f, 6.25f, 7.0f };
-            input *= downsamplingGainComp[parameters.downsampling];
-            
-//            int16_t pcm_in = static_cast<int16_t>(input * 32767.0);
-//            uint8_t compressed = Lin2ALaw(pcm_in);
-//
-//            int16_t pcm_out = ALaw2Lin(compressed);
-//            channelData[sample] = static_cast<float>(pcm_out) * mOutScale;
-            channelData[sample] = input;
         }
     }
 }
@@ -258,7 +254,7 @@ void ALawProcessor::reset() {}
 
 CodecProcessorParameters& ALawProcessor::getParameters() { return parameters; }
 
-void ALawProcessor::setParameters(const CodecProcessorParameters &params)
+void ALawProcessor::setParameters(const CodecProcessorParameters& params)
 {
     if (parameters.downsampling != params.downsampling)
     {
@@ -278,4 +274,34 @@ void ALawProcessor::setParameters(const CodecProcessorParameters &params)
     }
     
     parameters = params;
+}
+
+unsigned char ALawProcessor::Lin2ALaw(int16_t pcm_val)
+{
+    int sign;
+    int exponent;
+    int mantissa;
+    unsigned char compressedByte;
+    
+    sign = ((~pcm_val) >> 8) & 0x80;
+    if (!sign)
+        pcm_val = static_cast<int16_t>(-pcm_val);
+    if (pcm_val > cClip)
+        pcm_val = cClip;
+    if (pcm_val >= 256)
+    {
+        exponent = static_cast<int>(ALawCompressTable[(pcm_val >> 8) & 0x7f]);
+        mantissa = (pcm_val >> (exponent + 3)) & 0x0f;
+        compressedByte = ((exponent << 4) | mantissa);
+    }
+    else
+        compressedByte = static_cast<unsigned char>(pcm_val >> 4);
+    
+    compressedByte ^= (sign ^ 0x55);
+    return compressedByte;
+}
+
+short ALawProcessor::ALaw2Lin(uint8_t a_val)
+{
+    return ALawDecompressTable[a_val];
 }

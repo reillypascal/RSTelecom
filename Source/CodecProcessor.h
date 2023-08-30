@@ -34,16 +34,6 @@ class GSMProcessor : public CodecProcessorBase
     std::vector<IIR> preFilters;
     std::vector<IIR> postFilters;
     
-//    juce::dsp::IIR::Filter<float> preFilter1;
-//    juce::dsp::IIR::Filter<float> preFilter2;
-//    juce::dsp::IIR::Filter<float> preFilter3;
-//    juce::dsp::IIR::Filter<float> preFilter4;
-//
-//    juce::dsp::IIR::Filter<float> postFilter1;
-//    juce::dsp::IIR::Filter<float> postFilter2;
-//    juce::dsp::IIR::Filter<float> postFilter3;
-//    juce::dsp::IIR::Filter<float> postFilter4;
-    
     juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>> mFilterCoefficientsArray;
     
 public:
