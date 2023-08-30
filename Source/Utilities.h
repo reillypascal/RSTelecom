@@ -20,6 +20,15 @@ inline float wrap(float a, float b)
     return (a >= 0 ? 0 : b) + (mod > __FLT_EPSILON__ || !isnan(mod) ? mod : 0);
 }
 
+inline float softClip(float x)
+{
+    if (x > 3.0f)
+        return 1.0f;
+    else if (x < -3.0f)
+        return -1.0f;
+    else return x * (27.0 + x * x) / (27.0 + 9.0 * x * x);
+}
+
 struct CodecProcessorParameters
 {
     CodecProcessorParameters() {}

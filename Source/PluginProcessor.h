@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "BitReducerProcessor.h"
 #include "CodecProcessor.h"
+#include "Utilities.h"
 
 struct ProcessorFactory
 {

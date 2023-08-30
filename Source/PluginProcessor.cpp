@@ -185,6 +185,20 @@ void RSTelecomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
+    // saturation pre-processing
+    float saturationGainLin = pow(10.0f, saturationParameter->load() / 20.0f);
+    
+    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    {
+        auto* channelData = buffer.getWritePointer (channel);
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            channelData[sample] = softClip(saturationGainLin * channelData[sample]);
+        }
+    }
+    
+    // codecs
     slotCodecs[0] = slot1MenuParameter->getIndex();
     slotCodecs[1] = slot2MenuParameter->getIndex();
     
@@ -221,13 +235,6 @@ void RSTelecomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
             slotProcessors[i]->processBlock(buffer, midiMessages);
         }
     }
-    
-//    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-//    {
-//        auto* channelData = buffer.getWritePointer (channel);
-//
-//
-//    }
 }
 
 //==============================================================================
