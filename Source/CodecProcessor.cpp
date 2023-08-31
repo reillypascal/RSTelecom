@@ -51,18 +51,23 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
         // if gsm data variables are valid, process audio
         if (mGsmSignalInput != nullptr && mGsmSignal != nullptr && mGsmSignalOutput != nullptr)
         {
+            // ================ pre-filtering block ================
             // low cut filter
             src[sample] = lowCutFilter.processSample(src[sample]);
             
-            // pre-filtering
-            for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+            // pre-filter and compensate if downsampling
+            if (parameters.downsampling > 1)
             {
-                src[sample] = preFilters[filter].processSample(src[sample]);
-                preFilters[filter].snapToZero();
+                for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+                {
+                    src[sample] = preFilters[filter].processSample(src[sample]);
+                    preFilters[filter].snapToZero();
+                }
+                // compensate - matched in post-filtering
+                src[sample] *= 1.0f + ((parameters.downsampling - 1.0f) * 0.25);
             }
             
-            // move filter gain compensation before gsm to minimize noise?
-            
+            //================ GSM processing block ================
             // prepare to store next sample
             float currentSample { 0.0f };
             // sync data rate to downsampling counter
@@ -87,6 +92,7 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
                 }
 
                 mGsmSignalOutput.get()[mGsmSignalCounter] >>= 3;
+                // sample has moved from src -> gsm -> currentSample
                 currentSample = static_cast<float>(mGsmSignalOutput.get()[mGsmSignalCounter]) / 4096.0f;
             }
             
@@ -94,21 +100,25 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
             ++mDownsamplingCounter;
             mDownsamplingCounter %= parameters.downsampling;
             
-            // post-filtering
-            for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+            //================= post-filtering block =================
+            // post-filter and compensate if downsampling
+            if (parameters.downsampling > 1)
             {
-                currentSample = postFilters[filter].processSample(currentSample);
-                postFilters[filter].snapToZero();
+                // post-filtering
+                for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+                {
+                    currentSample = postFilters[filter].processSample(currentSample);
+                    postFilters[filter].snapToZero();
+                }
+                // compensate - matched in pre-filtering
+                currentSample *= 1.0f + ((parameters.downsampling - 1.0f) * 0.25);
             }
             
-            // filter gain compensation - move before gsm to minimize noise?
-            std::vector<float> downsamplingGainComp { 1.0f, 1.0f, 1.45f, 2.35f, 3.5f, 4.35f, 5.5f, 6.25f, 7.0f };
-            src[sample] *= downsamplingGainComp[parameters.downsampling];
-            
-            // move from mono gsm signal to stereo out buffer
+            //================== mono buffer -> stereo buffer =========
             for (int channel = 0; channel < numChannels; ++channel)
             {
                 auto* dst = buffer.getWritePointer(channel);
+                // sample has moved from currentSample -> dst
                 dst[sample] = currentSample;
             }
         }
