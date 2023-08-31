@@ -55,7 +55,7 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
             // low cut filter
             src[sample] = lowCutFilter.processSample(src[sample]);
             
-            // pre-filter and compensate if downsampling
+            // pre-filter if downsampling
             if (parameters.downsampling > 1)
             {
                 for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
@@ -63,8 +63,6 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
                     src[sample] = preFilters[filter].processSample(src[sample]);
                     preFilters[filter].snapToZero();
                 }
-                // compensate - matched in post-filtering
-                src[sample] *= 1.0f + ((parameters.downsampling - 1.0f) * 0.25);
             }
             
             //================ GSM processing block ================
@@ -110,8 +108,9 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
                     currentSample = postFilters[filter].processSample(currentSample);
                     postFilters[filter].snapToZero();
                 }
-                // compensate - matched in pre-filtering
-                currentSample *= 1.0f + ((parameters.downsampling - 1.0f) * 0.25);
+                // compensate - was 0.18 here and in pre-filter, but
+                // clipped, even though level sounded about equal
+                currentSample *= 1.0f + ((parameters.downsampling - 1.0f) * 0.36);
             }
             
             //================== mono buffer -> stereo buffer =========
