@@ -26,8 +26,9 @@ class GSMProcessor : public CodecProcessorBase
     int mSampleRate { 44100 };
     int mGsmSignalCounter { 0 };
     int mDownsamplingCounter { 0 };
+    int mResamplingFilterOrder { 8 };
     
-    int mResamplingFilterOrder = 8;
+    float mCurrentSample { 0.0f };
         
     using IIR = juce::dsp::IIR::Filter<float>;
     IIR lowCutFilter;
@@ -51,3 +52,6 @@ public:
     
     void setParameters(const CodecProcessorParameters& params) override;
 };
+
+//==============================================================================
+// opus

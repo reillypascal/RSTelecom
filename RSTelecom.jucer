@@ -4,7 +4,8 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               version="0.1.0" companyWebsite="reillyspitzfaden.netlify.app"
               bundleIdentifier="com.reillyapitzfaden.RSTelecom" pluginManufacturer="Reilly Spitzfaden"
-              aaxIdentifier="com.reillyspitzfaden.RSTelecom" cppLanguageStandard="20">
+              aaxIdentifier="com.reillyspitzfaden.RSTelecom" cppLanguageStandard="20"
+              companyName="Reilly Spitzfaden" pluginFormats="buildAU,buildVST3">
   <MAINGROUP id="xmOF5Q" name="RSTelecom">
     <GROUP id="{4FD4FE91-39CC-AA94-403D-718ABB361BFD}" name="gsm">
       <FILE id="rCAgkQ" name="add.c" compile="1" resource="0" file="Source/gsm/add.c"/>

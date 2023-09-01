@@ -80,7 +80,7 @@ void MuLawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBu
                     postFilters[channel][filter].snapToZero();
                 }
                 
-                channelData[sample] *= 1.0f + ((parameters.downsampling - 1.0f) * 0.08);
+//                channelData[sample] *= 1.0f + ((parameters.downsampling - 1.0f) * 0.08);
             }
         }
     }
@@ -216,7 +216,7 @@ void ALawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuf
                     postFilters[channel][filter].snapToZero();
                 }
                 
-                channelData[sample] *= 1.0f + ((parameters.downsampling - 1.0f) * 0.08);
+//                channelData[sample] *= 1.0f + ((parameters.downsampling - 1.0f) * 0.08);
             }
         }
     }

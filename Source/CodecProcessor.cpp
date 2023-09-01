@@ -66,11 +66,10 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
             }
             
             //================ GSM processing block ================
-            // prepare to store next sample
-            float currentSample { 0.0f };
             // sync data rate to downsampling counter
             if (mDownsamplingCounter == 0)
             {
+                // still working with src
                 mGsmSignalInput.get()[mGsmSignalCounter] = static_cast<gsm_signal>(src[sample] * 4096.0f);
 
                 mGsmSignalInput.get()[mGsmSignalCounter] <<= 3;
@@ -91,8 +90,10 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
 
                 mGsmSignalOutput.get()[mGsmSignalCounter] >>= 3;
                 // sample has moved from src -> gsm -> currentSample
-                currentSample = static_cast<float>(mGsmSignalOutput.get()[mGsmSignalCounter]) / 4096.0f;
+                mCurrentSample = static_cast<float>(mGsmSignalOutput.get()[mGsmSignalCounter]) / 4096.0f;
             }
+            // return sample to src for filtering
+            src[sample] = mCurrentSample;
             
             // increment downsampling frame
             ++mDownsamplingCounter;
@@ -105,20 +106,20 @@ void GSMProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
                 // post-filtering
                 for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
                 {
-                    currentSample = postFilters[filter].processSample(currentSample);
+                    src[sample] = postFilters[filter].processSample(src[sample]);
                     postFilters[filter].snapToZero();
                 }
                 // compensate - was 0.18 here and in pre-filter, but
                 // clipped, even though level sounded about equal
-                currentSample *= 1.0f + ((parameters.downsampling - 1.0f) * 0.36);
+//                src[sample] *= 1.0f + ((parameters.downsampling - 1.0f) * 0.18);
             }
             
             //================== mono buffer -> stereo buffer =========
             for (int channel = 0; channel < numChannels; ++channel)
             {
                 auto* dst = buffer.getWritePointer(channel);
-                // sample has moved from currentSample -> dst
-                dst[sample] = currentSample;
+                // sample has moved from src -> dst
+                dst[sample] = src[sample];
             }
         }
     }
