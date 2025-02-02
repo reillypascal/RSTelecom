@@ -76,7 +76,7 @@ RSTelecomAudioProcessorEditor::RSTelecomAudioProcessorEditor (RSTelecomAudioProc
     using enum CodecMode;
     slot1Menu.addItem("None", static_cast<int>(none));
     slot1Menu.addItem("GSM 06.10", static_cast<int>(gsm610));
-    slot1Menu.addItem("iLBC", static_cast<int>(ilbc));
+//    slot1Menu.addItem("iLBC", static_cast<int>(ilbc));
     slot1Menu.addItem("Mu-Law", static_cast<int>(mulaw));
     slot1Menu.addItem("A-Law", static_cast<int>(alaw));
     slot1Menu.setSelectedId(static_cast<int>(none));
@@ -87,7 +87,7 @@ RSTelecomAudioProcessorEditor::RSTelecomAudioProcessorEditor (RSTelecomAudioProc
     addAndMakeVisible(slot2Menu);
     slot2Menu.addItem("None", static_cast<int>(none));
     slot2Menu.addItem("GSM 06.10", static_cast<int>(gsm610));
-    slot2Menu.addItem("iLBC", static_cast<int>(ilbc));
+//    slot2Menu.addItem("iLBC", static_cast<int>(ilbc));
     slot2Menu.addItem("Mu-Law", static_cast<int>(mulaw));
     slot2Menu.addItem("A-Law", static_cast<int>(alaw));
     slot2Menu.setSelectedId(static_cast<int>(none));
@@ -111,11 +111,11 @@ void RSTelecomAudioProcessorEditor::paint (juce::Graphics& g)
     g.fillAll (juce::Colour::fromRGB(32, 32, 32));
 
     g.setColour (juce::Colours::aliceblue);
-    g.setFont (juce::Font("Verdana", 32.0f, juce::Font::plain));
+    g.setFont (juce::Font(32.0f, juce::Font::plain));
     g.drawFittedText ("RS Telecom", 25, 10, 350, 45, juce::Justification::left, 1);
     
-    g.setFont(juce::Font("Verdana", 16.0f, juce::Font::plain));
-    g.drawFittedText("Version 0.1.0\n reillyspitzfaden.netlify.app", getWidth() - 375, 15, 350, 45, juce::Justification::right, 2);
+    g.setFont(juce::Font(16.0f, juce::Font::plain));
+    g.drawFittedText("Version 0.1.0\n reillyspitzfaden.com", getWidth() - 375, 15, 350, 45, juce::Justification::right, 2);
     
     g.setColour(juce::Colour::fromRGB(68, 81, 96));
     g.fillRoundedRectangle(25, 65, getWidth() - 50, 230, 25);
