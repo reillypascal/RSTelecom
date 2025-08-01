@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="BRli4s" name="RSTelecom" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              version="0.1.0" companyWebsite="reillyspitzfaden.com" bundleIdentifier="com.reillyapitzfaden.RSTelecom"
+<JUCERPROJECT id="BRli4s" name="RSTelecom" projectType="audioplug" addUsingNamespaceToJuceHeader="0"
+              displaySplashScreen="1" jucerFormatVersion="1" version="0.1.0"
+              companyWebsite="reillyspitzfaden.com" bundleIdentifier="com.reillyapitzfaden.RSTelecom"
               pluginManufacturer="Reilly Spitzfaden" aaxIdentifier="com.reillyspitzfaden.RSTelecom"
               cppLanguageStandard="20" companyName="Reilly Spitzfaden" pluginFormats="buildAU,buildVST3">
   <MAINGROUP id="xmOF5Q" name="RSTelecom">

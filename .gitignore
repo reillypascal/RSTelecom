@@ -1,4 +1,8 @@
+.cache/
+.zed/
+build/
 Builds/
+JUCE/
 JuceLibraryCode/
 Releases/
 .DS_Store

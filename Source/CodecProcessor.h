@@ -29,7 +29,7 @@ class GSMProcessor : public CodecProcessorBase
     int mResamplingFilterOrder { 8 };
     
     float mCurrentSample { 0.0f };
-        
+    
     using IIR = juce::dsp::IIR::Filter<float>;
     IIR lowCutFilter;
     std::vector<IIR> preFilters;
