@@ -2,7 +2,7 @@
 .zed/
 build/
 Builds/
-JUCE/
+JUCE
 JuceLibraryCode/
 Releases/
 .DS_Store

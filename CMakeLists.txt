@@ -54,9 +54,9 @@ juce_add_plugin(${PROJECT_NAME}
     IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
     # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
     # Should the plugin be installed to a default location after building?
-    # COPY_PLUGIN_AFTER_BUILD TRUE
-    # VST3_COPY_DIR "/Library/Audio/Plug-Ins/VST3"
-    # AU_COPY_DIR "/Library/Audio/Plug-Ins/Components"
+    COPY_PLUGIN_AFTER_BUILD TRUE
+    VST3_COPY_DIR "/Library/Audio/Plug-Ins/VST3"
+    AU_COPY_DIR "/Library/Audio/Plug-Ins/Components"
     PLUGIN_MANUFACTURER_CODE Rspi               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE Rstc                            # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
@@ -136,6 +136,7 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_audio_basics
         juce::juce_audio_devices
         juce::juce_audio_formats
+        juce::juce_audio_plugin_client
         juce::juce_audio_processors
         juce::juce_audio_utils
         juce::juce_core
