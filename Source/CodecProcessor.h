@@ -15,27 +15,27 @@ extern "C" {
 //==============================================================================
 class GSMProcessor : public CodecProcessorBase
 {
-    std::unique_ptr<gsm_state> mEncode = std::make_unique<gsm_state>();
-    std::unique_ptr<gsm_state> mDecode = std::make_unique<gsm_state>();
-    std::unique_ptr<gsm_signal[]> mGsmSignalInput = std::make_unique<gsm_signal[]>(160);
-    std::unique_ptr<gsm_signal[]> mGsmSignal = std::make_unique<gsm_signal[]>(160);
-    std::unique_ptr<gsm_signal[]> mGsmSignalOutput = std::make_unique<gsm_signal[]>(160);
-    std::unique_ptr<gsm_byte[]> mGsmFrame = std::make_unique<gsm_byte[]>(33);
+    std::unique_ptr<gsm_state> encode = std::make_unique<gsm_state>();
+    std::unique_ptr<gsm_state> decode = std::make_unique<gsm_state>();
+    std::unique_ptr<gsm_signal[]> gsmSignalInput = std::make_unique<gsm_signal[]>(160);
+    std::unique_ptr<gsm_signal[]> gsmSignal = std::make_unique<gsm_signal[]>(160);
+    std::unique_ptr<gsm_signal[]> gsmSignalOutput = std::make_unique<gsm_signal[]>(160);
+    std::unique_ptr<gsm_byte[]> gsmFrame = std::make_unique<gsm_byte[]>(33);
     
     CodecProcessorParameters parameters;
-    int mSampleRate { 44100 };
-    int mGsmSignalCounter { 0 };
-    int mDownsamplingCounter { 0 };
-    int mResamplingFilterOrder { 8 };
+    float sampleRate = 44100;
+    int gsmSignalCounter = 0;
+    int downsamplingCounter = 0;
+    int resamplingFilterOrder = 8;
     
-    float mCurrentSample { 0.0f };
+    float currentSample = 0.0f;
     
     using IIR = juce::dsp::IIR::Filter<float>;
     IIR lowCutFilter;
     std::vector<IIR> preFilters;
     std::vector<IIR> postFilters;
     
-    juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>> mFilterCoefficientsArray;
+    juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>> filterCoefficientsArray;
     
 public:
     GSMProcessor();

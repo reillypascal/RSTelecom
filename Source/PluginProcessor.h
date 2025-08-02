@@ -102,7 +102,7 @@ private:
     std::vector<int> slotCodecs { 0, 0 };
     std::vector<int> prevSlotCodecs { -1, -1 };
     
-    int mNumProcessorSlots = 2;
+    int numProcessorSlots = 2;
         
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RSTelecomAudioProcessor)

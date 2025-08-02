@@ -203,7 +203,7 @@ void RSTelecomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     slotCodecs[1] = slot2MenuParameter->getIndex();
     
     // create and initialize processors
-    for (int i = 0; i < mNumProcessorSlots; ++i)
+    for (int i = 0; i < numProcessorSlots; ++i)
     {
         if (slotCodecs[i] != prevSlotCodecs[i])
         {
@@ -224,7 +224,7 @@ void RSTelecomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
     
     // update parameters, process audio
-    for (int i = 0; i < mNumProcessorSlots; ++i)
+    for (int i = 0; i < numProcessorSlots; ++i)
     {
         if (slotProcessors[i] != nullptr)
         {

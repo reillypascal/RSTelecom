@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <cstddef>
 #include "Utilities.h"
 
 //=======================================================================
@@ -27,8 +28,8 @@ private:
     
     short MuLaw2Lin(uint8_t u_val);
     
-    const int cBias = 0x84;
-    const int cClip = 32635;
+    const int bias = 0x84;
+    const int clip = 32635;
     
     constexpr static char MuLawCompressTable[256]
     {
@@ -85,15 +86,14 @@ private:
             120,   112,   104,    96,    88,    80,    72,    64,
              56,    48,    40,    32,    24,    16,     8,     0
     };
-
     
-    float mOutScale { 1.0f/32767.0f };
+    float outScale = 1.0f/32767.0f;
     
-    int mSampleRate { 44100 };
-    int mNumChannels { 2 };
-    int mResamplingFilterOrder { 8 };
-    std::vector<int> mDownsamplingCounter { 0, 0 };
-    std::vector<float> mDownsamplingInput { 0.0f, 0.0f };
+    float sampleRate = 44100;
+    int numChannels = 2;
+    int resamplingFilterOrder = 8;
+    std::vector<int> downsamplingCounter { 0, 0 };
+    std::vector<float> downsamplingInput { 0.0f, 0.0f };
     
     CodecProcessorParameters parameters;
     
@@ -101,7 +101,7 @@ private:
     std::vector<std::vector<IIR>> preFilters;
     std::vector<std::vector<IIR>> postFilters;
     
-    juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>> mFilterCoefficientsArray;
+    juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>> filterCoefficientsArray;
 };
 
 
@@ -129,7 +129,7 @@ private:
     
     short ALaw2Lin(uint8_t u_val);
     
-    const int cClip = 32635;
+    const int clip = 32635;
     constexpr static char ALawCompressTable[128]
     {
         1,1,2,2,3,3,3,3,
@@ -186,13 +186,13 @@ private:
           944,   912,  1008,   976,   816,   784,   880,   848
     };
     
-    float mOutScale { 1.0f/32767.0f };
+    float outScale = 1.0f/32767.0f;
     
-    int mSampleRate { 44100 };
-    int mNumChannels { 2 };
-    int mResamplingFilterOrder { 8 };
-    std::vector<int> mDownsamplingCounter { 0, 0 };
-    std::vector<float> mDownsamplingInput { 0.0f, 0.0f };
+    float sampleRate = 44100;
+    int numChannels = 2;
+    int resamplingFilterOrder = 8;
+    std::vector<int> downsamplingCounter { 0, 0 };
+    std::vector<float> downsamplingInput { 0.0f, 0.0f };
     
     CodecProcessorParameters parameters;
     

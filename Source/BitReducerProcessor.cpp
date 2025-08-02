@@ -1,4 +1,5 @@
 #include "BitReducerProcessor.h"
+#include <cstddef>
 
 MuLawProcessor::MuLawProcessor() = default;
 
@@ -6,30 +7,30 @@ MuLawProcessor::~MuLawProcessor() = default;
 
 void MuLawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 {
-    mSampleRate = spec.sampleRate;
-    mNumChannels = spec.numChannels;
+    sampleRate = spec.sampleRate;
+    numChannels = spec.numChannels;
     
-    mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / parameters.downsampling) * 0.4, mSampleRate, mResamplingFilterOrder);
+    filterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / parameters.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
     
-    preFilters.resize(mNumChannels);
-    postFilters.resize(mNumChannels);
+    preFilters.resize(numChannels);
+    postFilters.resize(numChannels);
     
-    for (int channel = 0; channel < mNumChannels; ++channel)
+    for (int channel = 0; channel < numChannels; ++channel)
     {
-        preFilters[channel].resize(mResamplingFilterOrder / 2);
-        postFilters[channel].resize(mResamplingFilterOrder / 2);
+        preFilters[channel].resize(resamplingFilterOrder / 2);
+        postFilters[channel].resize(resamplingFilterOrder / 2);
         
-        for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+        for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
         {
             // prepare each pre-filter
             preFilters[channel][filter].reset();
             preFilters[channel][filter].prepare(spec);
-            preFilters[channel][filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
+            preFilters[channel][filter].coefficients = filterCoefficientsArray.getObjectPointer(filter);
             
             // prepare each post-filter
             postFilters[channel][filter].reset();
             postFilters[channel][filter].prepare(spec);
-            postFilters[channel][filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
+            postFilters[channel][filter].coefficients = filterCoefficientsArray.getObjectPointer(filter);
         }
     }
     
@@ -39,7 +40,7 @@ void MuLawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 void MuLawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     int numSamples = buffer.getNumSamples();
-    int numChannels = buffer.getNumChannels();
+    numChannels = buffer.getNumChannels();
     
     for (int channel = 0; channel < numChannels; ++channel)
     {
@@ -52,29 +53,29 @@ void MuLawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBu
             uint8_t compressed = Lin2MuLaw(pcm_in);
             
             int16_t pcm_out = MuLaw2Lin(compressed);
-            channelData[sample] = static_cast<float>(pcm_out) * mOutScale;
+            channelData[sample] = static_cast<float>(pcm_out) * outScale;
             
             // downsample and filter
             if (parameters.downsampling > 1)
             {
                 // pre-filtering; write from/to channelData
-                for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+                for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
                 {
                     channelData[sample] = preFilters[channel][filter].processSample(channelData[sample]);
                     preFilters[channel][filter].snapToZero();
                 }
                 
                 // downsampling; increment input sample from channelData
-                if (mDownsamplingCounter[channel] == 0)
-                    mDownsamplingInput[channel] = channelData[sample];
+                if (downsamplingCounter[channel] == 0)
+                    downsamplingInput[channel] = channelData[sample];
                 
-                channelData[sample] = mDownsamplingInput[channel];
+                channelData[sample] = downsamplingInput[channel];
                 
-                ++mDownsamplingCounter[channel];
-                mDownsamplingCounter[channel] %= parameters.downsampling;
+                ++downsamplingCounter[channel];
+                downsamplingCounter[channel] %= parameters.downsampling;
                 
                 // post-filtering; take in input sample, write to channelData
-                for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+                for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
                 {
                     channelData[sample] = postFilters[channel][filter].processSample(channelData[sample]);
                     postFilters[channel][filter].snapToZero();
@@ -95,17 +96,17 @@ void MuLawProcessor::setParameters(const CodecProcessorParameters& params)
     if (parameters.downsampling != params.downsampling)
     {
         // coefficients
-        mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / params.downsampling) * 0.4, mSampleRate, mResamplingFilterOrder);
+        filterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / params.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
         
-        for (int channel = 0; channel < mNumChannels; ++channel)
+        for (int channel = 0; channel < numChannels; ++channel)
         {
-            for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+            for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
             {
                 // update each pre-filter
-                preFilters[channel][filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
+                preFilters[channel][filter].coefficients = filterCoefficientsArray.getObjectPointer(filter);
                 
                 // update each post-filter
-                postFilters[channel][filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
+                postFilters[channel][filter].coefficients = filterCoefficientsArray.getObjectPointer(filter);
             }
         }
     }
@@ -118,9 +119,9 @@ inline unsigned char MuLawProcessor::Lin2MuLaw(int16_t pcm_val)
     int sign = (pcm_val >> 8) & 0x80;
     if (sign)
         pcm_val = static_cast<int16_t>(-pcm_val);
-    if (pcm_val > cClip)
-        pcm_val = cClip;
-    pcm_val = static_cast<int16_t>(pcm_val + cBias);
+    if (pcm_val > clip)
+        pcm_val = clip;
+    pcm_val = static_cast<int16_t>(pcm_val + bias);
     int exponent = static_cast<int>(MuLawCompressTable[(pcm_val >> 7) & 0xff]);
     int mantissa = (pcm_val >> (exponent + 3)) & 0x0f;
     int compressedByte = ~(sign | (exponent << 4) | mantissa);
@@ -142,20 +143,20 @@ ALawProcessor::~ALawProcessor() = default;
 
 void ALawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 {
-    mSampleRate = spec.sampleRate;
-    mNumChannels = spec.numChannels;
+    sampleRate = spec.sampleRate;
+    numChannels = spec.numChannels;
     
-    mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / parameters.downsampling) * 0.4, mSampleRate, mResamplingFilterOrder);
+    mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / parameters.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
     
-    preFilters.resize(mNumChannels);
-    postFilters.resize(mNumChannels);
+    preFilters.resize(numChannels);
+    postFilters.resize(numChannels);
     
-    for (int channel = 0; channel < mNumChannels; ++channel)
+    for (size_t channel = 0; channel < numChannels; ++channel)
     {
-        preFilters[channel].resize(mResamplingFilterOrder / 2);
-        postFilters[channel].resize(mResamplingFilterOrder / 2);
+        preFilters[channel].resize(resamplingFilterOrder / 2);
+        postFilters[channel].resize(resamplingFilterOrder / 2);
         
-        for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+        for (size_t filter = 0; filter < resamplingFilterOrder / 2; ++filter)
         {
             // prepare each pre-filter
             preFilters[channel][filter].reset();
@@ -175,7 +176,7 @@ void ALawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 void ALawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     int numSamples = buffer.getNumSamples();
-    int numChannels = buffer.getNumChannels();
+    numChannels = buffer.getNumChannels();
     
     for (int channel = 0; channel < numChannels; ++channel)
     {
@@ -188,29 +189,29 @@ void ALawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuf
             uint8_t compressed = Lin2ALaw(pcm_in);
 
             int16_t pcm_out = ALaw2Lin(compressed);
-            channelData[sample] = static_cast<float>(pcm_out) * mOutScale;
+            channelData[sample] = static_cast<float>(pcm_out) * outScale;
             
             // downsample and filter
             if (parameters.downsampling > 1)
             {
                 // pre-filtering; write from/to channelData
-                for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+                for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
                 {
                     channelData[sample] = preFilters[channel][filter].processSample(channelData[sample]);
                     preFilters[channel][filter].snapToZero();
                 }
                 
                 // downsampling; increment input sample from channelData
-                if (mDownsamplingCounter[channel] == 0)
-                    mDownsamplingInput[channel] = channelData[sample];
+                if (downsamplingCounter[channel] == 0)
+                    downsamplingInput[channel] = channelData[sample];
                 
-                channelData[sample] = mDownsamplingInput[channel];
+                channelData[sample] = downsamplingInput[channel];
                 
-                ++mDownsamplingCounter[channel];
-                mDownsamplingCounter[channel] %= parameters.downsampling;
+                ++downsamplingCounter[channel];
+                downsamplingCounter[channel] %= parameters.downsampling;
                 
                 // post-filtering; take in input sample, write to channelData
-                for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+                for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
                 {
                     channelData[sample] = postFilters[channel][filter].processSample(channelData[sample]);
                     postFilters[channel][filter].snapToZero();
@@ -230,11 +231,11 @@ void ALawProcessor::setParameters(const CodecProcessorParameters& params)
 {
     if (parameters.downsampling != params.downsampling)
     {
-        mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((mSampleRate / params.downsampling) * 0.4, mSampleRate, mResamplingFilterOrder);
+        mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / params.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
         
-        for (int channel = 0; channel < mNumChannels; ++channel)
+        for (int channel = 0; channel < numChannels; ++channel)
         {
-            for (int filter = 0; filter < mResamplingFilterOrder / 2; ++filter)
+            for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
             {
                 // update each pre-filter
                 preFilters[channel][filter].coefficients = mFilterCoefficientsArray.getObjectPointer(filter);
@@ -258,8 +259,8 @@ unsigned char ALawProcessor::Lin2ALaw(int16_t pcm_val)
     sign = ((~pcm_val) >> 8) & 0x80;
     if (!sign)
         pcm_val = static_cast<int16_t>(-pcm_val);
-    if (pcm_val > cClip)
-        pcm_val = cClip;
+    if (pcm_val > clip)
+        pcm_val = clip;
     if (pcm_val >= 256)
     {
         exponent = static_cast<int>(ALawCompressTable[(pcm_val >> 8) & 0x7f]);
