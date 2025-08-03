@@ -87,6 +87,8 @@ private:
              56,    48,    40,    32,    24,    16,     8,     0
     };
     
+    CodecProcessorParameters parameters;
+    
     float outScale = 1.0f/32767.0f;
     
     float sampleRate = 44100;
@@ -94,8 +96,6 @@ private:
     int resamplingFilterOrder = 8;
     std::vector<int> downsamplingCounter { 0, 0 };
     std::vector<float> downsamplingInput { 0.0f, 0.0f };
-    
-    CodecProcessorParameters parameters;
     
     using IIR = juce::dsp::IIR::Filter<float>;
     std::vector<std::vector<IIR>> preFilters;

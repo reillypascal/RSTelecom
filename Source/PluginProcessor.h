@@ -1,16 +1,12 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
+// JUCE Processor
 
 #pragma once
 
 #include <JuceHeader.h>
-#include "BitReducerProcessor.h"
-#include "CodecProcessor.h"
+
+#include "AdpcmProcessor.h"
+#include "CompanderProcessor.h"
+#include "GsmProcessor.h"
 #include "Utilities.h"
 
 struct ProcessorFactory

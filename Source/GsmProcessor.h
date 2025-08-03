@@ -23,6 +23,7 @@ class GSMProcessor : public CodecProcessorBase
     std::unique_ptr<gsm_byte[]> gsmFrame = std::make_unique<gsm_byte[]>(33);
     
     CodecProcessorParameters parameters;
+    
     float sampleRate = 44100;
     int gsmSignalCounter = 0;
     int downsamplingCounter = 0;
@@ -52,6 +53,3 @@ public:
     
     void setParameters(const CodecProcessorParameters& params) override;
 };
-
-//==============================================================================
-// opus

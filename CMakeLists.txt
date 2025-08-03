@@ -78,8 +78,9 @@ juce_generate_juce_header(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME}
     PRIVATE
-        Source/BitReducerProcessor.cpp
-        Source/CodecProcessor.cpp
+        Source/AdpcmProcessor.cpp
+        Source/CompanderProcessor.cpp
+        Source/GsmProcessor.cpp
         Source/PluginEditor.cpp
         Source/PluginProcessor.cpp
         Source/gsm/add.c

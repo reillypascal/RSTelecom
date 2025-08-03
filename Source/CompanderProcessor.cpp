@@ -1,4 +1,4 @@
-#include "BitReducerProcessor.h"
+#include "CompanderProcessor.h"
 #include <cstddef>
 
 MuLawProcessor::MuLawProcessor() = default;
