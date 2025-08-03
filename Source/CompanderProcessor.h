@@ -92,7 +92,6 @@ private:
     float outScale = 1.0f/32767.0f;
     
     float sampleRate = 44100;
-    int numChannels = 2;
     int resamplingFilterOrder = 8;
     std::vector<int> downsamplingCounter { 0, 0 };
     std::vector<float> downsamplingInput { 0.0f, 0.0f };
@@ -189,7 +188,6 @@ private:
     float outScale = 1.0f/32767.0f;
     
     float sampleRate = 44100;
-    int numChannels = 2;
     int resamplingFilterOrder = 8;
     std::vector<int> downsamplingCounter { 0, 0 };
     std::vector<float> downsamplingInput { 0.0f, 0.0f };

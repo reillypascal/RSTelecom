@@ -29,9 +29,9 @@ public:
     void setParameters(const CodecProcessorParameters& params) override;
     
 private:
-    unsigned char voxEncode(int16_t& inSample);
+    uint8_t voxEncode(int16_t& inSample);
     
-    int16_t voxDecode(unsigned char& inNibble);
+    int16_t voxDecode(uint8_t& inNibble);
     // “Array bound cannot be deduced from a default member initializer” if just const 
     static constexpr int16_t ADPCM_INDEX_TABLE[] = { -1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8 };
     
@@ -47,7 +47,6 @@ private:
     CodecProcessorParameters parameters;
     
     float sampleRate = 44100;
-    int numChannels = 2;
     int resamplingFilterOrder = 8;
     std::vector<int> downsamplingCounter { 0, 0 };
     std::vector<float> downsamplingInput { 0.0f, 0.0f };

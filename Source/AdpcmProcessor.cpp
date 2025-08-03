@@ -13,7 +13,7 @@ VoxProcessor::~VoxProcessor() = default;
 void VoxProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 {
     sampleRate = static_cast<int>(spec.sampleRate);
-    numChannels = static_cast<int>(spec.numChannels);
+    int numChannels = static_cast<int>(spec.numChannels);
     
     filterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / parameters.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
     
@@ -44,7 +44,21 @@ void VoxProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 
 void VoxProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    int numChannels = buffer.getNumChannels();
+    int numSamples = buffer.getNumSamples();
     
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        auto* channelData = buffer.getWritePointer(channel);
+        
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            int16_t pcmIn = static_cast<int16_t>(channelData[sample] * 32767.0f);
+            uint8_t compressed = voxEncode(pcmIn);
+            int16_t pcmOut = voxDecode(compressed);
+            channelData[sample] = static_cast<float>(pcmOut) / 32767.0f;
+        }
+    }
 }
 
 void VoxProcessor::reset() {}
@@ -56,7 +70,7 @@ void VoxProcessor::setParameters(const CodecProcessorParameters& params)
     // coefficients
     filterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / params.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
     
-    for (int channel = 0; channel < numChannels; ++channel)
+    for (int channel = 0; channel < preFilters.size(); ++channel)
     {
         for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
         {
@@ -71,7 +85,7 @@ void VoxProcessor::setParameters(const CodecProcessorParameters& params)
     parameters = params;
 }
 
-unsigned char VoxProcessor::voxEncode(int16_t& inSample) {
+uint8_t VoxProcessor::voxEncode(int16_t& inSample) {
     // calculate differece btwn last time/this; divide by 16 because we're working at 12
     // bits
     int16_t diff = (inSample / 16) - encodeState.predictor;
@@ -82,7 +96,7 @@ unsigned char VoxProcessor::voxEncode(int16_t& inSample) {
     stepIndex = std::clamp(stepIndex, int16_t{0}, static_cast<int16_t>(sizeof(VOX_STEP_TABLE)/sizeof(VOX_STEP_TABLE[0]) - 1));
     
     // encoder block based on pseudocode in spec
-    unsigned char bits = 0b0000;
+    uint8_t bits = 0b0000;
     if (diff < 0) { 
         bits |= 0b1000; 
     }
@@ -101,8 +115,8 @@ unsigned char VoxProcessor::voxEncode(int16_t& inSample) {
     
     // decode block from self.vox_decode, NOT full function
     // sign is 4th bit; magnitude is 3 LSBs
-    unsigned char sign = bits & 0b1000;
-    unsigned char magnitude = bits & 0b0111;
+    uint8_t sign = bits & 0b1000;
+    uint8_t magnitude = bits & 0b0111;
     // calculate difference based on pseudocode in spec
     int16_t delta = (2 * static_cast<int16_t>(magnitude) * stepSize) >> 3;
     // last time's value
@@ -123,7 +137,7 @@ unsigned char VoxProcessor::voxEncode(int16_t& inSample) {
     return bits;
 }
 
-int16_t VoxProcessor::voxDecode(unsigned char& inNibble) {
+int16_t VoxProcessor::voxDecode(uint8_t& inNibble) {
     // get step size from last time's index before updating
     int16_t stepSize = VOX_STEP_TABLE[decodeState.stepIndex];
     // use in_nibble to index into adpcm step table; add to step
@@ -132,8 +146,8 @@ int16_t VoxProcessor::voxDecode(unsigned char& inNibble) {
     stepIndex = std::clamp<int16_t>(stepIndex, 0, static_cast<int16_t>(sizeof(VOX_STEP_TABLE)/sizeof(VOX_STEP_TABLE[0]) - 1));
     
     // sign is 4th bit; magnitude is 3 LSBs
-    unsigned char sign = inNibble & 0b1000;
-    unsigned char magnitude = inNibble & 0b0111;
+    uint8_t sign = inNibble & 0b1000;
+    uint8_t magnitude = inNibble & 0b0111;
     
     // magnitude; after * 2 and >> 3, equivalent to scale of 3 bits in (ss(n)*B2)+(ss(n)/2*B1)+(ss(n)/4*BO) from pseudocode
     // + 1: after >> 3, corresponds to ss(n)/8 from pseudocode — bit always multiplies step, regardless of 3 magnitude bits on/off

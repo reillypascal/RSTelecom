@@ -8,7 +8,7 @@ MuLawProcessor::~MuLawProcessor() = default;
 void MuLawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 {
     sampleRate = spec.sampleRate;
-    numChannels = spec.numChannels;
+    int numChannels = spec.numChannels;
     
     filterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / parameters.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
     
@@ -39,8 +39,8 @@ void MuLawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 
 void MuLawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    int numChannels = buffer.getNumChannels();
     int numSamples = buffer.getNumSamples();
-    numChannels = buffer.getNumChannels();
     
     for (int channel = 0; channel < numChannels; ++channel)
     {
@@ -98,7 +98,7 @@ void MuLawProcessor::setParameters(const CodecProcessorParameters& params)
         // coefficients
         filterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / params.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
         
-        for (int channel = 0; channel < numChannels; ++channel)
+        for (int channel = 0; channel < preFilters.size(); ++channel)
         {
             for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
             {
@@ -144,7 +144,7 @@ ALawProcessor::~ALawProcessor() = default;
 void ALawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 {
     sampleRate = spec.sampleRate;
-    numChannels = spec.numChannels;
+    int numChannels = spec.numChannels;
     
     mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / parameters.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
     
@@ -175,8 +175,8 @@ void ALawProcessor::prepare(const juce::dsp::ProcessSpec& spec)
 
 void ALawProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    int numChannels = buffer.getNumChannels();
     int numSamples = buffer.getNumSamples();
-    numChannels = buffer.getNumChannels();
     
     for (int channel = 0; channel < numChannels; ++channel)
     {
@@ -233,7 +233,7 @@ void ALawProcessor::setParameters(const CodecProcessorParameters& params)
     {
         mFilterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / params.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
         
-        for (int channel = 0; channel < numChannels; ++channel)
+        for (int channel = 0; channel < preFilters.size(); ++channel)
         {
             for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
             {
