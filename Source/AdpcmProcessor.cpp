@@ -72,12 +72,16 @@ void VoxProcessor::setParameters(const CodecProcessorParameters& params)
 }
 
 unsigned char VoxProcessor::voxEncode(int16_t& inSample) {
+    // calculate differece btwn last time/this; divide by 16 because we're working at 12
+    // bits
     int16_t diff = (inSample / 16) - encodeState.predictor;
+    // step size for this time
     int16_t stepSize = VOX_STEP_TABLE[encodeState.stepIndex];
+    // step index to use for next time
     int16_t stepIndex = encodeState.stepIndex + ADPCM_INDEX_TABLE[encodeState.outSample];
-    
     stepIndex = std::clamp(stepIndex, int16_t{0}, static_cast<int16_t>(sizeof(VOX_STEP_TABLE)/sizeof(VOX_STEP_TABLE[0]) - 1));
     
+    // encoder block based on pseudocode in spec
     unsigned char bits = 0b0000;
     if (diff < 0) { 
         bits |= 0b1000; 
@@ -95,23 +99,27 @@ unsigned char VoxProcessor::voxEncode(int16_t& inSample) {
         bits |= 0b0001;
     }
     
+    // decode block from self.vox_decode, NOT full function
+    // sign is 4th bit; magnitude is 3 LSBs
     unsigned char sign = bits & 0b1000;
     unsigned char magnitude = bits & 0b0111;
-    
+    // calculate difference based on pseudocode in spec
     int16_t delta = (2 * static_cast<int16_t>(magnitude) * stepSize) >> 3;
-    
+    // last time's value
     int16_t predictor = encodeState.predictor;
-    
+    // if sign bit (4th one) is set, value is negative
     if (sign != 0) {
         delta *= -1;
     }
     predictor *= delta;
     
+    // push values into z^-1 delays
     encodeState.predictor = std::clamp<int16_t>(predictor, -(1 << 11), (1 << 11) - 1);
     
     encodeState.stepIndex = stepIndex;
     encodeState.outSample = bits;
     
+    // return vox sample
     return bits;
 }
 
