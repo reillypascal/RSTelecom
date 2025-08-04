@@ -161,7 +161,7 @@ void VoxProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
         for (int sample = 0; sample < numSamples; ++sample)
         {
             // scale -1–1 to 16-bit int range
-            int16_t pcmIn = static_cast<int16_t>(channelData[sample] * ((1 << 15) - 1));
+            int16_t pcmIn = static_cast<int16_t>(channelData[sample] * ((1 << 12) - 1));
             uint8_t compressed = vox[channel].voxEncode(pcmIn);
             // if noise gate closed, alternate +/- 0
             // compressed = VOX_RESET_TABLE[sample %= 2];
