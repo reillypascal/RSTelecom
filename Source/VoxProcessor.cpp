@@ -65,6 +65,10 @@ void VoxProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
             uint8_t compressed = voxEncode(pcmIn);
             // if noise gate closed, alternate +/- 0
             // compressed = VOX_RESET_TABLE[sample %= 2];
+            // if (resetCounter < 48) {
+            //     compressed = VOX_RESET_TABLE[resetCounter %= 2];
+            //     resetCounter += 1;
+            // }
             int16_t pcmOut = voxDecode(compressed);
             channelData[sample] = static_cast<float>(pcmOut) / ((1 << 15) - 1);
             channelData[sample] = lowCutFilter[channel].processSample(channelData[sample]);
@@ -129,7 +133,7 @@ uint8_t VoxProcessor::voxEncode(int16_t& inSample) {
     uint8_t sign = bits & 0b1000;
     uint8_t magnitude = bits & 0b0111;
     // calculate difference based on pseudocode in spec
-    int16_t delta = (2 * static_cast<int16_t>(magnitude) * stepSize) >> 3;
+    int16_t delta = ((2 * static_cast<int16_t>(magnitude) + 1) * stepSize) >> 3;
     // last time's value
     int16_t predictor = encodeState.predictor;
     // if sign bit (4th one) is set, value is negative

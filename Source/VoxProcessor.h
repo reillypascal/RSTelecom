@@ -9,7 +9,7 @@
 struct VoxState {
     int16_t predictor = 0;
     int16_t stepIndex = 0;
-    unsigned char outSample = 0;
+    uint8_t outSample = 0;
 };
 
 class VoxProcessor : public CodecProcessorBase
@@ -43,6 +43,7 @@ private:
     };
     // +/- 0 for resetting 
     static constexpr uint8_t VOX_RESET_TABLE[] = { 0b1000, 0b0000 };
+    int resetCounter = 0;
     
     VoxState encodeState;
     VoxState decodeState;
