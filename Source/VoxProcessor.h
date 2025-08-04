@@ -56,7 +56,8 @@ private:
     std::vector<float> downsamplingInput { 0.0f, 0.0f };
     
     using IIR = juce::dsp::IIR::Filter<float>;
-    std::vector<IIR> lowCutFilter;
+    std::vector<IIR> preLowCutFilter;
+    std::vector<IIR> postLowCutFilter;
     std::vector<std::vector<IIR>> preFilters;
     std::vector<std::vector<IIR>> postFilters;
     
