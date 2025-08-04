@@ -60,9 +60,9 @@ private:
     {
         none = 1,
         gsm610,
-        ilbc,
         mulaw,
-        alaw
+        alaw,
+        vox
     };
     
     enum class DownsamplingModes

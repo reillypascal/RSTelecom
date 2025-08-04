@@ -78,11 +78,11 @@ juce_generate_juce_header(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME}
     PRIVATE
-        Source/AdpcmProcessor.cpp
         Source/CompanderProcessor.cpp
         Source/GsmProcessor.cpp
         Source/PluginEditor.cpp
         Source/PluginProcessor.cpp
+        Source/VoxProcessor.cpp
         Source/gsm/add.c
         Source/gsm/code.c
         Source/gsm/debug.c

@@ -1,8 +1,10 @@
-#include "AdpcmProcessor.h"
+#include "VoxProcessor.h"
 #include "Utilities.h"
+#include "juce_dsp/juce_dsp.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 // #include <cstdint>
 
@@ -15,8 +17,11 @@ void VoxProcessor::prepare(const juce::dsp::ProcessSpec& spec)
     sampleRate = static_cast<int>(spec.sampleRate);
     int numChannels = static_cast<int>(spec.numChannels);
     
+    auto lowCutCoefficients = dsp::IIR::Coefficients<float>::makeHighPass(20.0f, sampleRate);
+    
     filterCoefficientsArray = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((sampleRate / parameters.downsampling) * 0.4, sampleRate, resamplingFilterOrder);
     
+    lowCutFilter.resize(numChannels);
     preFilters.resize(numChannels);
     postFilters.resize(numChannels);
     
@@ -24,6 +29,9 @@ void VoxProcessor::prepare(const juce::dsp::ProcessSpec& spec)
     {
         preFilters[channel].resize(resamplingFilterOrder / 2);
         postFilters[channel].resize(resamplingFilterOrder / 2);
+        
+        lowCutFilter[channel].prepare(spec);
+        lowCutFilter[channel].coefficients = lowCutCoefficients;
         
         for (int filter = 0; filter < resamplingFilterOrder / 2; ++filter)
         {
@@ -53,10 +61,13 @@ void VoxProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
         
         for (int sample = 0; sample < numSamples; ++sample)
         {
-            int16_t pcmIn = static_cast<int16_t>(channelData[sample] * 32767.0f);
+            int16_t pcmIn = static_cast<int16_t>(channelData[sample] * ((1 << 15) - 1));
             uint8_t compressed = voxEncode(pcmIn);
+            // if noise gate closed, alternate +/- 0
+            // compressed = VOX_RESET_TABLE[sample %= 2];
             int16_t pcmOut = voxDecode(compressed);
-            channelData[sample] = static_cast<float>(pcmOut) / 32767.0f;
+            channelData[sample] = static_cast<float>(pcmOut) / ((1 << 15) - 1);
+            channelData[sample] = lowCutFilter[channel].processSample(channelData[sample]);
         }
     }
 }
@@ -93,7 +104,7 @@ uint8_t VoxProcessor::voxEncode(int16_t& inSample) {
     int16_t stepSize = VOX_STEP_TABLE[encodeState.stepIndex];
     // step index to use for next time
     int16_t stepIndex = encodeState.stepIndex + ADPCM_INDEX_TABLE[encodeState.outSample];
-    stepIndex = std::clamp(stepIndex, int16_t{0}, static_cast<int16_t>(sizeof(VOX_STEP_TABLE)/sizeof(VOX_STEP_TABLE[0]) - 1));
+    stepIndex = std::clamp<int16_t>(stepIndex, 0, static_cast<int16_t>(sizeof(VOX_STEP_TABLE)/sizeof(VOX_STEP_TABLE[0]) - 1));
     
     // encoder block based on pseudocode in spec
     uint8_t bits = 0b0000;

@@ -4,9 +4,9 @@
 
 #include <JuceHeader.h>
 
-#include "AdpcmProcessor.h"
 #include "CompanderProcessor.h"
 #include "GsmProcessor.h"
+#include "VoxProcessor.h"
 #include "Utilities.h"
 
 struct ProcessorFactory
@@ -24,8 +24,9 @@ struct ProcessorFactory
              std::function<std::unique_ptr<CodecProcessorBase>()>> processorMapping
     {
         { 1, []() { return std::make_unique<GSMProcessor>(); } },
-        { 3, []() { return std::make_unique<MuLawProcessor>(); } },
-        { 4, []() { return std::make_unique<ALawProcessor>(); } }
+        { 2, []() { return std::make_unique<MuLawProcessor>(); } },
+        { 3, []() { return std::make_unique<ALawProcessor>(); } },
+        { 4, []() { return std::make_unique<VoxProcessor>(); } }
     };
 };
 

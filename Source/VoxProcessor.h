@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utilities.h"
+#include "juce_dsp/juce_dsp.h"
 #include <JuceHeader.h>
 #include <cstddef>
 #include <cstdint>
@@ -40,6 +41,8 @@ private:
         143, 157, 173, 190, 209, 230, 253, 279, 307, 337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
         876, 963, 1060, 1166, 1282, 1411, 1552,
     };
+    // +/- 0 for resetting 
+    static constexpr uint8_t VOX_RESET_TABLE[] = { 0b1000, 0b0000 };
     
     VoxState encodeState;
     VoxState decodeState;
@@ -52,6 +55,7 @@ private:
     std::vector<float> downsamplingInput { 0.0f, 0.0f };
     
     using IIR = juce::dsp::IIR::Filter<float>;
+    std::vector<IIR> lowCutFilter;
     std::vector<std::vector<IIR>> preFilters;
     std::vector<std::vector<IIR>> postFilters;
     
