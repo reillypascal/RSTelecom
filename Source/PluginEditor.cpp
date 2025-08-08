@@ -73,7 +73,7 @@ RSTelecomAudioProcessorEditor::RSTelecomAudioProcessorEditor (RSTelecomAudioProc
 //    slot1Menu.addItem("iLBC", static_cast<int>(ilbc));
     slot1Menu.addItem("Mu-Law", static_cast<int>(mulaw));
     slot1Menu.addItem("A-Law", static_cast<int>(alaw));
-    slot1Menu.addItem("Vox", static_cast<int>(vox));
+    // slot1Menu.addItem("Vox", static_cast<int>(vox));
     slot1Menu.setSelectedId(static_cast<int>(none));
     slot1Menu.setTextWhenNothingSelected("Codec:");
     slot1Menu.setJustificationType(juce::Justification::centred);
@@ -85,7 +85,7 @@ RSTelecomAudioProcessorEditor::RSTelecomAudioProcessorEditor (RSTelecomAudioProc
 //    slot2Menu.addItem("iLBC", static_cast<int>(ilbc));
     slot2Menu.addItem("Mu-Law", static_cast<int>(mulaw));
     slot2Menu.addItem("A-Law", static_cast<int>(alaw));
-    slot2Menu.addItem("Vox", static_cast<int>(vox));
+    // slot2Menu.addItem("Vox", static_cast<int>(vox));
     slot2Menu.setSelectedId(static_cast<int>(none));
     slot2Menu.setTextWhenNothingSelected("Codec:");
     slot2Menu.setJustificationType(juce::Justification::centred);
@@ -111,7 +111,7 @@ void RSTelecomAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawFittedText ("RS Telecom", 25, 10, 350, 45, juce::Justification::left, 1);
     
     g.setFont(juce::Font(16.0f, juce::Font::plain));
-    g.drawFittedText("Version 0.1.0\n reillyspitzfaden.com", getWidth() - 375, 15, 350, 45, juce::Justification::right, 2);
+    g.drawFittedText("Version 0.1.1\n reillyspitzfaden.com", getWidth() - 375, 15, 350, 45, juce::Justification::right, 2);
     
     g.setColour(juce::Colour::fromRGB(68, 81, 96));
     g.fillRoundedRectangle(25, 65, getWidth() - 50, 230, 25);

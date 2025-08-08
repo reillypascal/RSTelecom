@@ -1,5 +1,4 @@
 #include "CompanderProcessor.h"
-#include <cstddef>
 
 MuLawProcessor::MuLawProcessor() = default;
 
